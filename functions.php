@@ -62,14 +62,15 @@ function assoc_cc_customer($customerId, $ccToken) {
         return $json_response;
     }
 
-function create_charge($taxAmount, $amount, $creditCard, $currency = 'COP', $installments) {
+function create_charge($taxAmount, $amount, $creditCard, $currency = 'COP', $installments, $orderId) {
 
         $json_response = tpaga_api_post ( "/api/charge/credit_card", [ 
                 'taxAmount' => $taxAmount,
                 'amount' => intval ( $amount ),
                 'currency' => $currency,
                 'creditCard' => $creditCard,
-                'installments' => $installments
+                'installments' => $installments,
+                'orderId' => $orderId
         ], [ 
                 201,
                 402 
@@ -149,7 +150,8 @@ function tpaga_api_post($url, $data, $expected_http_codes) {
                                     'amount' => $data['amount'],
                                     'currency' => $data['currency'],
                                     'creditCard' => $data['creditCard'],
-                                    'installments' => $data['installments']
+                                    'installments' => $data['installments'],
+                                    'orderId' => $data['orderId']
                                   ]
                 ] );
 

@@ -19,7 +19,13 @@ elseif (isset($_POST['idTpagaCustomer'])){
 
     $response_asocie_cc = assoc_cc_customer($_POST['idTpagaCustomer'], $_POST['tmpCcToken']);
 
-    $response_charge = create_charge($_POST['taxAmount'], $_POST['amount'], $response_asocie_cc['id'], $currency = 'COP', $_POST['quotesForm']);
+    $response_charge = create_charge($_POST['taxAmount'], $_POST['amount'], $response_asocie_cc['id'], $currency = 'COP', $_POST['quotesForm'], $_POST['orderNumber']);
+
+    if($response_charge['errorCode'] != "00")
+    {
+    	header("Location: https://megapiel.com/tpaga/decline.php?message=" . $response_charge['errorMessage']);
+		die();
+    }
 
     $GLOBALS['storeId'] = $_POST['storeId'];
     $GLOBALS['orderNumber'] = $_POST['orderNumber'];
@@ -36,7 +42,7 @@ elseif (isset($_POST['idTpagaCustomer'])){
     else
     {
     	header("Location: https://megapiel.com/tpaga/decline.php");
-		die();	
+		die();
     }
 }
 
@@ -122,6 +128,43 @@ function handle_request_error(request, text_status, error_thrown) {
 }
 
 function form_submit(evt) {
+
+	if($('[name="primaryAccountNumber"]').val() == "")
+	{
+		alert('Debe escribir el número de la tarjeta de crédito');
+		return false;
+	}
+
+	else if($('[name="cardHolderName"]').val() == "")
+	{
+		alert('Debe escribir el nombre como aparece en la tarjeta');
+		return false;
+	}
+
+	else if($('[name="expirationYear"]').val() == 0)
+	{
+		alert('Debe elegir el año de expiración');
+		return false;
+	}
+
+	else if($('[name="expirationMonth"]').val() == 0)
+	{
+		alert('Debe elegir el mes de expiración');
+		return false;
+	}
+
+	else if($('[name="cvc"]').val() == "")
+	{
+		alert('Debe escribir el CVC');
+		return false;
+	}
+
+	else if($('[name="quotes"]').val() == 0)
+	{
+		alert('Debe elegir el número de cuotas');
+		return false;
+	}
+
     var public_token = "dn19iq9df9qse9lgghssv9h21g8h28ph";
 
     $.ajax('https://sandbox.tpaga.co/api/tokenize/credit_card', {
@@ -157,7 +200,7 @@ $(document).ready(function () {
         	<h2>Valor IVA: <?php echo '$' . number_format($result['cart']['order']['tax']); ?></h2>
 		    <form id="cc_data">
 		     	<div class="form-group">
-		        	<input type="number" class="form-control" name="primaryAccountNumber" onBlur="validCard()" placeholder="Número de la Tarjeta de Credito"br>
+		        	<input type="number" class="form-control" name="primaryAccountNumber" size="16" onBlur="validCard()" placeholder="Número de la Tarjeta de Credito"br>
 		        </div>
 		        <div class="form-group">
 		        	<input type="text" class="form-control" name="cardHolderName" placeholder="Nombre">
@@ -285,18 +328,20 @@ $(document).ready(function () {
     	
 		function validCard()
 		{
-			$valid_cc = valid_credit_card($('[name="primaryAccountNumber"]').val());
-			console.log($valid_cc);
-    		if($valid_cc === false)
-    		{
-    			$('#submit').prop( "disabled", true );
-    			alert("Debe ingresar un número de tarjeta de crédito valido");
-    		}
-
-    		else
-    		{
-    			$('#submit').prop( "disabled", false );
-    		}
+			if($('[name="primaryAccountNumber"]').val() != "")
+			{
+				$valid_cc = valid_credit_card($('[name="primaryAccountNumber"]').val());
+	    		
+	    		if($valid_cc === false || $('[name="primaryAccountNumber"]').val().length <= 13 || $('[name="primaryAccountNumber"]').val().length > 16)
+	    		{
+	    			$('#submit').prop( "disabled", true );
+	    			alert("Debe ingresar un número de tarjeta de crédito valido");
+	    		}
+	    		else
+	    		{
+	    			$('#submit').prop( "disabled", false );
+	    		}
+			}			
 		}
 
 		function validateExpirationMonth()

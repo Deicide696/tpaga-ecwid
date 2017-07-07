@@ -12,7 +12,7 @@
     <div class="container">
         <img class="img-responsive" src="images/logo.png">
         <div class="col-md-4 col-md-offset-4 text-center">
-            <h1>Su compra no fue realizada. Por favor comuniquese con su banco</h1>
+            <h1>Su compra no fue realizada. <?php echo $_GET['message']; ?></h1>
             <a href="megapiel.com">Volver a la página</a>
 		</div>
 	</div>

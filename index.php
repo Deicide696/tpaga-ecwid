@@ -129,6 +129,10 @@ function handle_request_error(request, text_status, error_thrown) {
 
 function form_submit(evt) {
 
+	var d = new Date();
+	var year = d.getFullYear();
+	var month = d.getMonth()+1;
+
 	if($('[name="primaryAccountNumber"]').val() == "")
 	{
 		alert('Debe escribir el número de la tarjeta de crédito');
@@ -162,6 +166,12 @@ function form_submit(evt) {
 	else if($('[name="quotes"]').val() == 0)
 	{
 		alert('Debe elegir el número de cuotas');
+		return false;
+	}
+
+	else if($('[name="expirationYear"]').val() == year && $('[name="expirationMonth"]').val() <= month)
+	{
+		alert('Esta tarjeta ha expirado');
 		return false;
 	}
 
@@ -203,7 +213,7 @@ $(document).ready(function () {
 		        	<input type="number" class="form-control" name="primaryAccountNumber" size="16" onBlur="validCard()" placeholder="Número de la Tarjeta de Credito"br>
 		        </div>
 		        <div class="form-group">
-		        	<input type="text" class="form-control" name="cardHolderName" placeholder="Nombre">
+		        	<input type="text" class="form-control" name="cardHolderName" onBlur="validCardHolderName()" placeholder="Nombre">
 		        </div>
 		        <div class="form-group">
 		        	<select name="expirationYear" class="form-control">
@@ -287,6 +297,8 @@ $(document).ready(function () {
                 </div>
 		        <input type="submit" id="submit" class="btn btn-default" value="Pagar">
 		    </form>
+            <br><br>
+            <img class="img-responsive" src="images/tpaga.png">
 		</div>
 	</div>
 
@@ -336,6 +348,7 @@ $(document).ready(function () {
 	    		{
 	    			$('#submit').prop( "disabled", true );
 	    			alert("Debe ingresar un número de tarjeta de crédito valido");
+	    			$('[name="primaryAccountNumber"]').val("");
 	    		}
 	    		else
 	    		{
@@ -372,6 +385,15 @@ $(document).ready(function () {
 				$('[name="cvc"]').val("");
 			}
 		}
+
+        function validCardHolderName()
+        {
+            if ($('[name="cardHolderName"]').val().length < 2)
+            {
+                alert("El Nombre debe ser minimo de 2 caracteres");
+                $('[name="cardHolderName"]').val("");
+            }
+        }
 
 		$('[name="quotes"]').on('change', function() {
   			$('[name="quotesForm"]').val(this.value);

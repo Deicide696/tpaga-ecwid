@@ -1,5 +1,6 @@
 <?php
 require_once("functions.php");
+require "db_connection/models/User.php";
 
 if (isset($_POST['data'])) {
 
@@ -9,6 +10,8 @@ if (isset($_POST['data'])) {
 
     // The resulting JSON array will be in $result variable
     $result = getEcwidPayload($client_secret, $ecwid_payload);
+
+//    print_r($result['cart']['order']['customerId']); die();
 
     $response_tpaga_customer = create_tpaga_customer($result['cart']['order']['billingPerson']['name'], $result['cart']['order']['email'], $result['cart']['order']['billingPerson']['phone']);
 
@@ -44,6 +47,14 @@ elseif (isset($_POST['idTpagaCustomer'])){
     	header("Location: https://megapiel.com/tpaga/decline.php");
 		die();
     }
+}
+
+else
+{
+    $user = new User();
+    $user->customer_id_ecwid = 36919083;
+    $user->token_tpaga = 'asdsfwe23';
+    $user->save();
 }
 
 ?>

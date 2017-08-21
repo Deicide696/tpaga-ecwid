@@ -1,6 +1,8 @@
 <?php
 require_once("functions.php");
-require "db_connection/models/User.php";
+require_once "db_connection/models/User.php";
+require_once "db_connection/models/CreditCard.php";
+require_once "db_connection/search_temp.php";
 
 if (isset($_POST['data'])) {
 
@@ -11,16 +13,52 @@ if (isset($_POST['data'])) {
     // The resulting JSON array will be in $result variable
     $result = getEcwidPayload($client_secret, $ecwid_payload);
 
-//    print_r($result['cart']['order']['customerId']); die();
+    // Temporal
+    $searchUser = findUser($result['cart']['order']['customerId']);
+    //$searchUser = $user->findOne('customer_id_ecwid', $result['cart']['order']['customerId']);
 
-    $response_tpaga_customer = create_tpaga_customer($result['cart']['order']['billingPerson']['name'], $result['cart']['order']['email'], $result['cart']['order']['billingPerson']['phone']);
+    // Si no encuentra el usuario en a base de datos
+    if(!isset($searchUser))
+    {
+        $response_tpaga_customer = create_tpaga_customer($result['cart']['order']['billingPerson']['name'], $result['cart']['order']['email'], $result['cart']['order']['billingPerson']['phone']);
 
-    $GLOBALS['idTpagaCustomer'] = $response_tpaga_customer['id'];
+        $GLOBALS['idTpagaCustomer'] = $response_tpaga_customer['id'];
+
+        $user = new User();
+        $user->customer_id_ecwid = $result['cart']['order']['customerId'];
+        $user->token_tpaga = $response_tpaga_customer['id'];
+        $user->save();
+    }
+
+    else
+    {
+        $GLOBALS['idCustomer'] = $searchUser[0];
+        $GLOBALS['idTpagaCustomer'] = $searchUser[1];
+
+        // Temporal
+        $searchAllCreditCards = findAllCreditCards($searchUser[0]);
+    }
+
 }
 
 elseif (isset($_POST['idTpagaCustomer'])){
 
     $response_asocie_cc = assoc_cc_customer($_POST['idTpagaCustomer'], $_POST['tmpCcToken']);
+
+    if(isset($response_asocie_cc['id']))
+    {
+        $creditCard = new CreditCard();
+        $creditCard->token = $response_asocie_cc['id'];
+        $creditCard->last_four = $_POST['lastFour'];
+        $creditCard->user_id = $_POST['idEcwidCustomer'];
+        $creditCard->save();
+    }
+
+    else
+    {
+        header("Location: https://megapiel.com/tpaga/decline.php");
+        die();
+    }
 
     $response_charge = create_charge($_POST['taxAmount'], $_POST['amount'], $response_asocie_cc['id'], $currency = 'COP', $_POST['quotesForm'], $_POST['orderNumber']);
 
@@ -33,6 +71,8 @@ elseif (isset($_POST['idTpagaCustomer'])){
     $GLOBALS['storeId'] = $_POST['storeId'];
     $GLOBALS['orderNumber'] = $_POST['orderNumber'];
 	$GLOBALS['token'] = $_POST['token'];
+
+	die();
 
     $response_ecwid = update_ecwid($GLOBALS['storeId'], $GLOBALS['orderNumber'], $GLOBALS['token'], "PAID");
 
@@ -47,14 +87,6 @@ elseif (isset($_POST['idTpagaCustomer'])){
     	header("Location: https://megapiel.com/tpaga/decline.php");
 		die();
     }
-}
-
-else
-{
-    $user = new User();
-    $user->customer_id_ecwid = 36919083;
-    $user->token_tpaga = 'asdsfwe23';
-    $user->save();
 }
 
 ?>
@@ -120,7 +152,7 @@ $.fn.serializeObject = function()
     return o;
 };
 
-function notify_backend_tempcctoken(jd, text_status, request) {
+function notify_backend_tempcctoken(jd) {
     console.log(jd);
     $('[name="tmpCcToken"]').val(jd.token);
     $('form#assoc_customer_cc').submit();
@@ -216,6 +248,30 @@ $(document).ready(function () {
 <body>
     <div class="container">
         <img class="img-responsive" src="images/logo.png">
+        <?php
+            if(isset($searchAllCreditCards))
+            {
+
+        ?>
+            <div class="col-md-4 text-center">
+                <h1>Mis tarjeta registradas</h1>
+                <form id="tc_registradas">
+                    <div class="form-group">
+                        <select name="credit_card" class="form-control">
+                            <?php
+                            foreach ($searchAllCreditCards as $card)
+                            {
+                                echo '<option value "' . $card[1] . '">' . $card[0] . '</option>';
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <input type="submit" id="submit" class="btn btn-default" value="Pagar">
+                </form>
+            </div>
+        <?php
+            }
+        ?>
         <div class="col-md-4 col-md-offset-4 text-center">
         	<h2>Valor Total: <?php echo '$' . number_format($result['cart']['order']['total']); ?></h2>
         	<h2>Valor IVA: <?php echo '$' . number_format($result['cart']['order']['tax']); ?></h2>
@@ -315,6 +371,8 @@ $(document).ready(function () {
 
     <form id="assoc_customer_cc" action="index.php" method="POST">
         <input type="hidden" name="tmpCcToken">
+        <input type="hidden" name="lastFour">
+        <input type="hidden" name="idCustomer" value="<?php print_r($GLOBALS['idCustomer']); ?>">
         <input type="hidden" name="idTpagaCustomer" value="<?php print_r($GLOBALS['idTpagaCustomer']); ?>">
         <input type="hidden" name="taxAmount" value="<?php echo $result['cart']['order']['tax']; ?>">
         <input type="hidden" name="amount" value="<?php echo $result['cart']['order']['total']; ?>">
@@ -365,6 +423,10 @@ $(document).ready(function () {
 	    		{
 	    			$('#submit').prop( "disabled", false );
 	    		}
+
+                var primaryAccountNumberToString = $('[name="primaryAccountNumber"]').val().toString(); //convert to string
+
+                $('[name="lastFour"]').val(primaryAccountNumberToString.slice(-4));
 			}			
 		}
 

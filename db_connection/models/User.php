@@ -1,5 +1,5 @@
 <?php
-	require dirname(__FILE__)."/../db/connection.php";
+require_once dirname(__FILE__)."/../db/connection.php";
 	
 	/**
 	* Model class 

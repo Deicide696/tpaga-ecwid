@@ -1,6 +1,6 @@
-<?php 
+<?php
 
-	require "../db/connection.php";
+    require_once dirname(__FILE__)."/../db/connection.php";
 	
 	/**
 	* Model class 
@@ -9,8 +9,8 @@
 	{
 		
 		public $id = null;
-		public $bin = "";
-		public $franchise = "";
+		public $last_four = "";
+        public $token = "";
         public $user_id = "";
 
 		function __construct()
@@ -30,17 +30,17 @@
 	    /**
 	     * @return mixed
 	     */
-	    public function getBin()
+	    public function getLastFour()
 	    {
-	        return $this->bin;
+	        return $this->last_four;
 	    }
-	    /**
-	     * @return mixed
-	     */
-	    public function getFranchise()
-	    {
-	        return $this->franchise;
-	    }
+        /**
+         * @return mixed
+         */
+        public function getToken()
+        {
+            return $this->token;
+        }
         /**
          * @return mixed
          */
@@ -58,17 +58,17 @@
 	    /**
 	     * @return mixed
 	     */
-	    public function setBin($bin)
+	    public function setLastFour($last_four)
 	    {
-	        return $this->bin =  $bin;
+	        return $this->last_four =  $last_four;
 	    }
-	    /**
-	     * @return mixed
-	     */
-	    public function setFranchise($franchise)
-	    {
-	        return $this->franchise =  $franchise;
-	    }
+        /**
+         * @return mixed
+         */
+        public function setToken($token)
+        {
+            return $this->token =  $token;
+        }
         /**
          * @return mixed
          */

@@ -363,8 +363,6 @@ elseif (isset($_POST['idTpagaCustomer']))
 			        	<option value="2026">2026</option>
 			        	<option value="2027">2027</option>
 			        	<option value="2028">2028</option>
-			        	<option value="2029">2029</option>
-			        	<option value="2030">2030</option>
 		        	</select>
 		        </div>
 		        <div class="form-group">
@@ -389,7 +387,7 @@ elseif (isset($_POST['idTpagaCustomer']))
 		        </div>
 		        <div class="form-group">
                     <select name="quotes" class="form-control">
-                        <option>Número de cuotas</option>
+                        <option value="0">Número de cuotas</option>
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
@@ -479,7 +477,7 @@ elseif (isset($_POST['idTpagaCustomer']))
 			{
 				$valid_cc = valid_credit_card($('[name="primaryAccountNumber"]').val());
 	    		
-	    		if($valid_cc === false || $('[name="primaryAccountNumber"]').val().length <= 13 || $('[name="primaryAccountNumber"]').val().length > 16)
+	    		if($valid_cc === false || $('[name="primaryAccountNumber"]').val().length <= 13 || $('[name="primaryAccountNumber"]').val().length > 19)
 	    		{
 	    			$('#submit').prop( "disabled", true );
 	    			alert("Debe ingresar un número de tarjeta de crédito valido");
@@ -518,11 +516,23 @@ elseif (isset($_POST['idTpagaCustomer']))
 
 		function validCvc()
 		{
-			if ($('[name="cvc"]').val().length > 4)
+            if ($('[name="cvc"]').val().length < 3)
+            {
+                alert("El CVC debe ser mayor de 3 caracteres");
+                $('[name="cvc"]').val("");
+            }
+
+			else if ($('[name="cvc"]').val().length > 4)
 			{
 				alert("El CVC no puede exceder los 4 caracteres");
 				$('[name="cvc"]').val("");
 			}
+
+            else if (!$.isNumeric($('[name="cvc"]').val()))
+            {
+                alert("El CVC solo permite numeros");
+                $('[name="cvc"]').val("");
+            }
 		}
 
         function validCardHolderName()

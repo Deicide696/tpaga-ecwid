@@ -3,7 +3,8 @@ require("vendor/autoload.php");
 
 $tpaga_url = 'https://sandbox.tpaga.co';
 
-$private_api_key_tpaga = 'c507thtjd5prg91rvjtet9g3ns2egura';
+//$private_api_key_tpaga = 'c507thtjd5prg91rvjtet9g3ns2egura';
+$private_api_key_tpaga = '2mduai312lq43clg9kmlbmqlbe0gpimf';
 
 function getEcwidPayload($app_secret_key, $data) {
   // Get the encryption key (16 first bytes of the app's client_secret key)
@@ -125,7 +126,7 @@ function tpaga_api_post($url, $data, $expected_http_codes) {
 
                 $response = $client->request('POST', $url, [ 
                         'auth' => [
-                                'c507thtjd5prg91rvjtet9g3ns2egura', 
+                                '2mduai312lq43clg9kmlbmqlbe0gpimf',
                                 ': '
                         ],
                         'json' => [
@@ -142,7 +143,7 @@ function tpaga_api_post($url, $data, $expected_http_codes) {
 
                 $response = $client->request('POST', $url, [ 
                         'auth' => [
-                                'c507thtjd5prg91rvjtet9g3ns2egura', 
+                                '2mduai312lq43clg9kmlbmqlbe0gpimf',
                                 ': '
                         ],
                         'json' => [
@@ -161,7 +162,7 @@ function tpaga_api_post($url, $data, $expected_http_codes) {
             else{
                 $response = $client->request('POST', $url, [ 
                         'auth' => [
-                                'c507thtjd5prg91rvjtet9g3ns2egura', 
+                                '2mduai312lq43clg9kmlbmqlbe0gpimf',
                                 ': '
                         ],
                         'json' => [
@@ -172,20 +173,17 @@ function tpaga_api_post($url, $data, $expected_http_codes) {
                 $bug = 'assoc_cc_customer';
             }
         }
-        catch ( Exception $e ) {
+        catch ( Exception $e )
+        {
             error_log ( "Caught exception: " . $e->getMessage () );
             echo ('Error: ' . $e->getMessage ());
             exit ();
-            
-            // header ( "Location: http://" . $_SERVER [HTTP_HOST] . "/" );
-            // die ();
         }
         
-        if (! in_array ( $response->getStatusCode (), $expected_http_codes )) {
-            // TODO set proper path for redirect
-            // header ( "Location: http://" . $_SERVER [HTTP_HOST] . "/" );
-        update_ecwid($GLOBALS['storeId'], $GLOBALS['orderNumber'], $GLOBALS['token'], "CANCELLED");
-          print_r( 'tpaga_api_post - ' . $response->getStatusCode(). ' - bug: ' . $bug); die();
+        if (! in_array ( $response->getStatusCode (), $expected_http_codes ))
+        {
+            update_ecwid($GLOBALS['storeId'], $GLOBALS['orderNumber'], $GLOBALS['token'], "CANCELLED");
+            print_r( 'tpaga_api_post - ' . $response->getStatusCode(). ' - bug: ' . $bug); die();
             exit ();
         }
         

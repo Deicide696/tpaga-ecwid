@@ -13,11 +13,11 @@ if (isset($_POST['data'])) {
     // The resulting JSON array will be in $result variable
     $result = getEcwidPayload($client_secret, $ecwid_payload);
 
-    // Temporal
+    // TODO: Esta es una implementación temporal
     $searchUser = findUser($result['cart']['order']['customerId']);
     //$searchUser = $user->findOne('customer_id_ecwid', $result['cart']['order']['customerId']);
 
-    // Si no encuentra el usuario en a base de datos
+    // Si no encuentra el usuario en la base de datos
     if(!isset($searchUser))
     {
         $response_tpaga_customer = create_tpaga_customer($result['cart']['order']['billingPerson']['name'], $result['cart']['order']['email'], $result['cart']['order']['billingPerson']['phone']);
@@ -35,32 +35,43 @@ if (isset($_POST['data'])) {
         $GLOBALS['idCustomer'] = $searchUser[0];
         $GLOBALS['idTpagaCustomer'] = $searchUser[1];
 
-        // Temporal
+        // TODO: Temporal
         $searchAllCreditCards = findAllCreditCards($searchUser[0]);
     }
 
 }
 
-elseif (isset($_POST['idTpagaCustomer'])){
-
-    $response_asocie_cc = assoc_cc_customer($_POST['idTpagaCustomer'], $_POST['tmpCcToken']);
-
-    if(isset($response_asocie_cc['id']))
+elseif (isset($_POST['idTpagaCustomer']))
+{
+    if($_POST['lastFour'] !== '')
     {
-        $creditCard = new CreditCard();
-        $creditCard->token = $response_asocie_cc['id'];
-        $creditCard->last_four = $_POST['lastFour'];
-        $creditCard->user_id = $_POST['idEcwidCustomer'];
-        $creditCard->save();
+        $response_asocie_cc = assoc_cc_customer($_POST['idTpagaCustomer'], $_POST['tmpCcToken']);
+
+        if(isset($response_asocie_cc['id']))
+        {
+            $creditCard = new CreditCard();
+            $creditCard->token = $response_asocie_cc['id'];
+            $creditCard->last_four = $_POST['lastFour'];
+            $creditCard->user_id = $_POST['idCustomer'];
+            $creditCard->save();
+        }
+
+        else
+        {
+            header("Location: https://megapiel.com/tpaga/decline.php");
+            die();
+        }
+
+
+
+        $response_charge = create_charge($_POST['taxAmount'], $_POST['amount'], $response_asocie_cc['id'], $currency = 'COP', $_POST['quotesForm'], $_POST['orderNumber']);
     }
 
     else
     {
-        header("Location: https://megapiel.com/tpaga/decline.php");
-        die();
+        $response_charge = create_charge($_POST['taxAmount'], $_POST['amount'], strval($_POST['tmpCcToken']), $currency = 'COP', $_POST['quotesForm'], $_POST['orderNumber']);
     }
 
-    $response_charge = create_charge($_POST['taxAmount'], $_POST['amount'], $response_asocie_cc['id'], $currency = 'COP', $_POST['quotesForm'], $_POST['orderNumber']);
 
     if($response_charge['errorCode'] != "00")
     {
@@ -71,8 +82,6 @@ elseif (isset($_POST['idTpagaCustomer'])){
     $GLOBALS['storeId'] = $_POST['storeId'];
     $GLOBALS['orderNumber'] = $_POST['orderNumber'];
 	$GLOBALS['token'] = $_POST['token'];
-
-	die();
 
     $response_ecwid = update_ecwid($GLOBALS['storeId'], $GLOBALS['orderNumber'], $GLOBALS['token'], "PAID");
 
@@ -134,116 +143,132 @@ elseif (isset($_POST['idTpagaCustomer'])){
           title: "Tpaga"      
         }
     </script>
-        <script>
-$.fn.serializeObject = function()
-{
-    var o = {};
-    var a = this.serializeArray();
-    $.each(a, function() {
-        if (o[this.name] !== undefined) {
-            if (!o[this.name].push) {
-                o[this.name] = [o[this.name]];
-            }
-            o[this.name].push(this.value || '');
-        } else {
-            o[this.name] = this.value || '';
+    <script>
+        $.fn.serializeObject = function()
+        {
+            var o = {};
+            var a = this.serializeArray();
+            $.each(a, function() {
+                if (o[this.name] !== undefined) {
+                    if (!o[this.name].push) {
+                        o[this.name] = [o[this.name]];
+                    }
+                    o[this.name].push(this.value || '');
+                } else {
+                    o[this.name] = this.value || '';
+                }
+            });
+            return o;
+        };
+
+        function notify_backend_tempcctoken(jd)
+        {
+            $('[name="tmpCcToken"]').val(jd.token);
+            $('form#assoc_customer_cc').submit();
         }
-    });
-    return o;
-};
 
-function notify_backend_tempcctoken(jd) {
-    console.log(jd);
-    $('[name="tmpCcToken"]').val(jd.token);
-    $('form#assoc_customer_cc').submit();
-}
+        function handle_request_error(request, text_status, error_thrown) {
+            if (request.status == 401) {
+                alert("Problema con credenciales de acceso a Tpaga");
+                return;
+            }
+            if (request.status == 422) {
+                var jd = JSON.parse(request.responseText);
+                alert("Datos erróneos en el campo " + jd.errors[0].field);
+                return;
+            }
+        }
 
-function handle_request_error(request, text_status, error_thrown) {
-    if (request.status == 401) {
-        alert("Problema con credenciales de acceso a Tpaga");
-        return;
-    }
-    if (request.status == 422) {
-        var jd = JSON.parse(request.responseText);
-        alert("Datos erróneos en el campo " + jd.errors[0].field);
-        return;
-    }
-}
+        function form_submit(evt)
+        {
+            var d = new Date();
+            var year = d.getFullYear();
+            var month = d.getMonth()+1;
 
-function form_submit(evt) {
+            if($('[name="primaryAccountNumber"]').val() == "")
+            {
+                alert('Debe escribir el número de la tarjeta de crédito');
+                return false;
+            }
 
-	var d = new Date();
-	var year = d.getFullYear();
-	var month = d.getMonth()+1;
+            else if($('[name="cardHolderName"]').val() == "")
+            {
+                alert('Debe escribir el nombre como aparece en la tarjeta');
+                return false;
+            }
 
-	if($('[name="primaryAccountNumber"]').val() == "")
-	{
-		alert('Debe escribir el número de la tarjeta de crédito');
-		return false;
-	}
+            else if($('[name="expirationYear"]').val() == 0)
+            {
+                alert('Debe elegir el año de expiración');
+                return false;
+            }
 
-	else if($('[name="cardHolderName"]').val() == "")
-	{
-		alert('Debe escribir el nombre como aparece en la tarjeta');
-		return false;
-	}
+            else if($('[name="expirationMonth"]').val() == 0)
+            {
+                alert('Debe elegir el mes de expiración');
+                return false;
+            }
 
-	else if($('[name="expirationYear"]').val() == 0)
-	{
-		alert('Debe elegir el año de expiración');
-		return false;
-	}
+            else if($('[name="cvc"]').val() == "")
+            {
+                alert('Debe escribir el CVC');
+                return false;
+            }
 
-	else if($('[name="expirationMonth"]').val() == 0)
-	{
-		alert('Debe elegir el mes de expiración');
-		return false;
-	}
+            else if($('[name="quotes"]').val() == 0)
+            {
+                alert('Debe elegir el número de cuotas');
+                return false;
+            }
 
-	else if($('[name="cvc"]').val() == "")
-	{
-		alert('Debe escribir el CVC');
-		return false;
-	}
+            else if($('[name="expirationYear"]').val() == year && $('[name="expirationMonth"]').val() <= month)
+            {
+                alert('Esta tarjeta ha expirado');
+                return false;
+            }
 
-	else if($('[name="quotes"]').val() == 0)
-	{
-		alert('Debe elegir el número de cuotas');
-		return false;
-	}
+//            var public_token = "dn19iq9df9qse9lgghssv9h21g8h28ph";
 
-	else if($('[name="expirationYear"]').val() == year && $('[name="expirationMonth"]').val() <= month)
-	{
-		alert('Esta tarjeta ha expirado');
-		return false;
-	}
+            var public_token = "plvakmngej7ejnpb4lgj6p2tf0mak0f8";
 
-    var public_token = "dn19iq9df9qse9lgghssv9h21g8h28ph";
+            $.ajax('https://sandbox.tpaga.co/api/tokenize/credit_card', {
+                method: 'POST',
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("Authorization", "Basic " + btoa("plvakmngej7ejnpb4lgj6p2tf0mak0f8" + ": "));
+                },
+                username: public_token,
+                password: '',
 
-    $.ajax('https://sandbox.tpaga.co/api/tokenize/credit_card', {
-        method: 'POST',
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader("Authorization", "Basic " + btoa("dn19iq9df9qse9lgghssv9h21g8h28ph" + ": "));
-        },
-        username: public_token,
-        password: '',
+                data: JSON.stringify($("form#cc_data").serializeObject()),
+                contentType: 'application/json',
+                dataType: 'json',
 
-        data: JSON.stringify($("form#cc_data").serializeObject()),
-        contentType: 'application/json',
-        dataType: 'json',
+                success: notify_backend_tempcctoken,
+                error: handle_request_error,
+            });
 
-        success: notify_backend_tempcctoken,
-        error: handle_request_error,
-    });
+            return false;
+        }
 
-    return false;
-}
+        function tc_registradas_submit(jd)
+        {
+            $('[name="tmpCcToken"]').val($('[name="credit_card"]').val());
 
-$(document).ready(function () {
-    $('form#cc_data').on('submit', form_submit);
-});
+            $('[name="quotesForm"]').val($('[name="tc_registradas_quotes"]').val());
 
-        </script>
+            $('form#assoc_customer_cc').submit();
+
+            return false;
+        }
+
+        $(document).ready(function ()
+        {
+            $('form#cc_data').on('submit', form_submit);
+
+            $('form#tc_registradas').on('submit', tc_registradas_submit);
+        });
+
+    </script>
     </head>
 <body>
     <div class="container">
@@ -261,9 +286,50 @@ $(document).ready(function () {
                             <?php
                             foreach ($searchAllCreditCards as $card)
                             {
-                                echo '<option value "' . $card[1] . '">' . $card[0] . '</option>';
+                                echo '<option value="' . $card[1] . '">' . $card[0] . '</option>';
                             }
                             ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select name="tc_registradas_quotes" class="form-control">
+                            <option>Número de cuotas</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                            <option value="13">13</option>
+                            <option value="14">14</option>
+                            <option value="15">15</option>
+                            <option value="16">16</option>
+                            <option value="17">17</option>
+                            <option value="18">18</option>
+                            <option value="19">19</option>
+                            <option value="20">20</option>
+                            <option value="21">21</option>
+                            <option value="22">22</option>
+                            <option value="23">23</option>
+                            <option value="24">24</option>
+                            <option value="25">25</option>
+                            <option value="26">26</option>
+                            <option value="27">27</option>
+                            <option value="28">28</option>
+                            <option value="29">29</option>
+                            <option value="30">30</option>
+                            <option value="31">31</option>
+                            <option value="32">32</option>
+                            <option value="33">33</option>
+                            <option value="34">34</option>
+                            <option value="35">35</option>
+                            <option value="36">36</option>
                         </select>
                     </div>
                     <input type="submit" id="submit" class="btn btn-default" value="Pagar">

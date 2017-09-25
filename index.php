@@ -221,13 +221,11 @@ elseif (isset($_POST['idTpagaCustomer']))
                 return false;
             }
 
-            else if($('[name="expirationYear"]').val() == year && $('[name="expirationMonth"]').val() <= month)
+            else if($('[name="expirationYear"]').val() == year && $('[name="expirationMonth"]').val() < month)
             {
                 alert('Esta tarjeta ha expirado');
                 return false;
             }
-
-//            var public_token = "dn19iq9df9qse9lgghssv9h21g8h28ph";
 
             var public_token = "plvakmngej7ejnpb4lgj6p2tf0mak0f8";
 

@@ -28,6 +28,11 @@ if (isset($_POST['data'])) {
         $user->customer_id_ecwid = $result['cart']['order']['customerId'];
         $user->token_tpaga = $response_tpaga_customer['id'];
         $user->save();
+
+        // TODO: Esta es una implementación temporal
+        $searchUser = findUser($result['cart']['order']['customerId']);
+
+        $GLOBALS['idCustomer'] = $searchUser[0];
     }
 
     else
@@ -58,11 +63,9 @@ elseif (isset($_POST['idTpagaCustomer']))
 
         else
         {
-            header("Location: https://megapiel.com/tpaga/decline.php");
+            header("Location: https://megapiel.com/tpaga/decline.php?message=Error interno con Tpaga");
             die();
         }
-
-
 
         $response_charge = create_charge($_POST['taxAmount'], $_POST['amount'], $response_asocie_cc['id'], $currency = 'COP', $_POST['quotesForm'], $_POST['orderNumber']);
     }
@@ -75,7 +78,7 @@ elseif (isset($_POST['idTpagaCustomer']))
 
     if($response_charge['errorCode'] != "00")
     {
-    	header("Location: https://megapiel.com/tpaga/decline.php?message=" . $response_charge['errorMessage']);
+    	header("Location: https://megapiel.com/tpaga/decline.php?message=" . $response_charge['errorCode'] . " - " . $response_charge['errorMessage']);
 		die();
     }
 
@@ -93,7 +96,7 @@ elseif (isset($_POST['idTpagaCustomer']))
 
     else
     {
-    	header("Location: https://megapiel.com/tpaga/decline.php");
+    	header("Location: https://megapiel.com/tpaga/decline.php?message=Error interno con Ecwid");
 		die();
     }
 }
@@ -227,12 +230,21 @@ elseif (isset($_POST['idTpagaCustomer']))
                 return false;
             }
 
-            var public_token = "plvakmngej7ejnpb4lgj6p2tf0mak0f8";
+            // Production
+            var public_token = "toirjj8j62eioi0osppo6t80o7f0of14";
+            // Development
+//            var public_token = "plvakmngej7ejnpb4lgj6p2tf0mak0f8";
 
-            $.ajax('https://sandbox.tpaga.co/api/tokenize/credit_card', {
+            // Production
+            $.ajax('https://api.tpaga.co/api/tokenize/credit_card', {
+            // Development
+//            $.ajax('https://sandbox.tpaga.co/api/tokenize/credit_card', {
                 method: 'POST',
                 beforeSend: function (xhr) {
-                    xhr.setRequestHeader("Authorization", "Basic " + btoa("plvakmngej7ejnpb4lgj6p2tf0mak0f8" + ": "));
+                    // Production
+                    xhr.setRequestHeader("Authorization", "Basic " + btoa("toirjj8j62eioi0osppo6t80o7f0of14" + ": "));
+                    // Development
+//                    xhr.setRequestHeader("Authorization", "Basic " + btoa("plvakmngej7ejnpb4lgj6p2tf0mak0f8" + ": "));
                 },
                 username: public_token,
                 password: '',

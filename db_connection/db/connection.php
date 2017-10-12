@@ -74,7 +74,7 @@
 					    return $this->conexion->lastInsertId();
 				  }				
 				  else{
-					  var_dump($this->conexion->errorInfo());
+					  var_dump($this->conexion->errorInfo(). " sql: " . $sql);
 				  }  			
 			}else{
 

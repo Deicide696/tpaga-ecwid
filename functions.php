@@ -3,8 +3,10 @@ require("vendor/autoload.php");
 
 $tpaga_url = 'https://sandbox.tpaga.co';
 
-//$private_api_key_tpaga = 'c507thtjd5prg91rvjtet9g3ns2egura';
-$private_api_key_tpaga = '2mduai312lq43clg9kmlbmqlbe0gpimf';
+// Production
+$private_api_key_tpaga = 'gpb6s6l4dk9ss668djjj7d59a8in12up';
+// Development
+//$private_api_key_tpaga = '2mduai312lq43clg9kmlbmqlbe0gpimf';
 
 function getEcwidPayload($app_secret_key, $data) {
   // Get the encryption key (16 first bytes of the app's client_secret key)
@@ -108,8 +110,11 @@ function update_ecwid($storeId, $orderNumber, $token, $paymentStatus) {
 }
 
 function tpaga_api_post($url, $data, $expected_http_codes) {
-        $client = new GuzzleHttp\Client ( [ 
-                'base_uri' => 'https://sandbox.tpaga.co',
+        $client = new GuzzleHttp\Client ( [
+                // Production
+                'base_uri' => 'https://api.tpaga.co',
+                // Development
+//                'base_uri' => 'https://sandbox.tpaga.co',
                 'timeout' => 30,
                 'headers' => [ 
                         'Content-Type' => 'application/json' 
@@ -126,7 +131,10 @@ function tpaga_api_post($url, $data, $expected_http_codes) {
 
                 $response = $client->request('POST', $url, [ 
                         'auth' => [
-                                '2mduai312lq43clg9kmlbmqlbe0gpimf',
+                            // Production
+                                'gpb6s6l4dk9ss668djjj7d59a8in12up',
+                            // Development
+//                                '2mduai312lq43clg9kmlbmqlbe0gpimf',
                                 ': '
                         ],
                         'json' => [
@@ -143,7 +151,10 @@ function tpaga_api_post($url, $data, $expected_http_codes) {
 
                 $response = $client->request('POST', $url, [ 
                         'auth' => [
-                                '2mduai312lq43clg9kmlbmqlbe0gpimf',
+                            // Production
+                                'gpb6s6l4dk9ss668djjj7d59a8in12up',
+                            // Development
+//                                '2mduai312lq43clg9kmlbmqlbe0gpimf',
                                 ': '
                         ],
                         'json' => [
@@ -162,7 +173,10 @@ function tpaga_api_post($url, $data, $expected_http_codes) {
             else{
                 $response = $client->request('POST', $url, [ 
                         'auth' => [
-                                '2mduai312lq43clg9kmlbmqlbe0gpimf',
+                            // Production
+                                'gpb6s6l4dk9ss668djjj7d59a8in12up',
+                            // Development
+//                                '2mduai312lq43clg9kmlbmqlbe0gpimf',
                                 ': '
                         ],
                         'json' => [
@@ -189,54 +203,6 @@ function tpaga_api_post($url, $data, $expected_http_codes) {
         
         return json_decode ( $response->getBody (), true );
     }
-
-function tpaga_api_post_tokenize($url, $data, $expected_http_codes) {
-
-      $client = new GuzzleHttp\Client ( [ 
-                'base_uri' => 'https://sandbox.tpaga.co',
-                'timeout' => 30,
-                'headers' => [ 
-                        'Content-Type' => 'application/json' 
-                ],
-                'http_errors' => false,
-                'verify' => false 
-        ] );
-        
-        $response = null;
-        
-        try {
-            $response = $client->request('POST', $url, [
-                            'auth' => [
-                                'dn19iq9df9qse9lgghssv9h21g8h28ph', 
-                                ': '
-                            ],
-                            'json' => [
-                                        'primaryAccountNumber' => $data['primaryAccountNumber'],
-                                        'cardHolderName' => $data['cardHolderName'],
-                                        'expirationMonth' => $data['expirationMonth'],
-                                        'expirationYear' => $data['expirationYear']
-                                      ]
-            ] );
-        }
-        catch ( Exception $e ) {
-            error_log ( "Caught exception: " . $e->getMessage () );
-            echo ('Error: ' . $e->getMessage ());
-            exit ();
-            
-            // header ( "Location: http://" . $_SERVER [HTTP_HOST] . "/" );
-            // die ();
-        }
-        
-        if (! in_array ( $response->getStatusCode (), $expected_http_codes )) {
-            // TODO set proper path for redirect
-            // header ( "Location: http://" . $_SERVER [HTTP_HOST] . "/" );
-          print_r('tpaga_api_post_tokenize: ' . $response->getStatusCode()); die();
-            exit ();
-        }
-        
-        return json_decode ( $response->getBody (), true );
-    }
-
 
 function ecwid_update_put($url, $data, $expected_http_codes) {
 

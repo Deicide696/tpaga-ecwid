@@ -13,7 +13,7 @@
         <img class="img-responsive" src="images/logo.png">
         <div class="col-md-4 col-md-offset-4 text-center">
             <h1>Gracias por su compra</h1>
-            <a href="megapiel.com">Volver a la página</a>
+            <a href="https://megapiel.com/">Volver a la página</a>
 		</div>
 	</div>
 </body>

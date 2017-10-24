@@ -46,7 +46,7 @@ function create_tpaga_customer($firstName, $email, $phone) {
                 'email' => ($email),
                 'phone' => ($phone) 
         ];
-        
+
         $json_response = tpaga_api_post ( '/api/customer', $customer_data, [ 
                 201 
         ] );
@@ -129,7 +129,7 @@ function tpaga_api_post($url, $data, $expected_http_codes) {
 
             if (isset($data['firstName'])) {
 
-                $response = $client->request('POST', $url, [ 
+                $response = $client->request('POST', $url, [
                         'auth' => [
                             // Production
                                 'gpb6s6l4dk9ss668djjj7d59a8in12up',
@@ -196,8 +196,8 @@ function tpaga_api_post($url, $data, $expected_http_codes) {
         
         if (! in_array ( $response->getStatusCode (), $expected_http_codes ))
         {
-            update_ecwid($GLOBALS['storeId'], $GLOBALS['orderNumber'], $GLOBALS['token'], "CANCELLED");
             print_r( 'tpaga_api_post - ' . $response->getStatusCode(). ' - bug: ' . $bug); die();
+            update_ecwid($GLOBALS['storeId'], $GLOBALS['orderNumber'], $GLOBALS['token'], "CANCELLED");
             exit ();
         }
         
@@ -237,7 +237,7 @@ function ecwid_update_put($url, $data, $expected_http_codes) {
         if (! in_array ( $response->getStatusCode (), $expected_http_codes )) {
             // TODO set proper path for redirect
             // header ( "Location: http://" . $_SERVER [HTTP_HOST] . "/" );
-          print_r('ecwid: ' . $response->getStatusCode()); die();
+          print_r('Ecwid: ' . $response->getStatusCode()); die();
             exit ();
         }
         

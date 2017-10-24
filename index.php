@@ -115,6 +115,9 @@ elseif (isset($_POST['idTpagaCustomer']))
 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+
     <!-- Include Ecwid JS SDK -->
     <script src="https://djqizrxa6f10j.cloudfront.net/ecwid-sdk/js/1.2.3/ecwid-app.js"></script>
 
@@ -279,24 +282,69 @@ elseif (isset($_POST['idTpagaCustomer']))
         });
 
     </script>
+
+        <style>
+            body {
+                font-family: 'Open Sans', sans-serif;
+            }
+
+            .form-control{
+                border: 0px solid #ccc;
+                border-radius: 0px;
+            }
+
+            input[type="text"].form-control, input[type="number"].form-control, input[type="password"].form-control{
+                border-bottom: 1px solid #ccc;
+                color: #1A1A1A;
+            }
+
+            input[type="text"].form-control:focus, input[type="number"].form-control:focus, input[type="password"].form-control:focus{
+                border-bottom: 1px solid #13BFD6;
+            }
+
+            input, input[placeholder]{
+                text-align:center;
+            }
+
+            .btn{
+                color: white;
+                padding:6px 24px !important;
+                font-size: 20px !important;
+                background: #13BFD6; /* For browsers that do not support gradients */
+                background: -webkit-linear-gradient(left, #13BFD6 , #15D4ED); /* For Safari 5.1 to 6.0 */
+                background: -o-linear-gradient(right, #13BFD6, #15D4ED); /* For Opera 11.1 to 12.0 */
+                background: -moz-linear-gradient(right, #13BFD6, #15D4ED); /* For Firefox 3.6 to 15 */
+                background: linear-gradient(to right, #13BFD6 , #15D4ED); /* Standard syntax (must be last) */
+            }
+
+            .btn-default{
+                border-color: transparent;
+            }
+
+        </style>
     </head>
 <body>
     <div class="container">
-        <img class="img-responsive" src="images/logo.png">
+        <img class="img-responsive" style="padding-top: 20px;" src="images/logo.png">
         <?php
             if(isset($searchAllCreditCards))
             {
 
         ?>
+            <div class="col-md-12 text-center">
+                <h2>Valor Total: <?php echo '$' . number_format($result['cart']['order']['total']); ?></h2>
+                <h2 style="font-size: 20px !important;">Valor
+                    IVA: <?php echo '$' . number_format($result['cart']['order']['tax']); ?></h2>
+            </div>
             <div class="col-md-4 text-center">
-                <h1>Mis tarjeta registradas</h1>
+                <h1>Mis tarjetas</h1>
                 <form id="tc_registradas">
                     <div class="form-group">
                         <select name="credit_card" class="form-control">
                             <?php
                             foreach ($searchAllCreditCards as $card)
                             {
-                                echo '<option value="' . $card[1] . '">' . $card[0] . '</option>';
+                                echo '<option value="' . $card[1] . '">' . "**** **** **** " . $card[0] . '</option>';
                             }
                             ?>
                         </select>
@@ -345,102 +393,239 @@ elseif (isset($_POST['idTpagaCustomer']))
                     <input type="submit" id="submit" class="btn btn-default" value="Pagar">
                 </form>
             </div>
+
+            <div class="col-md-6 col-md-offset-2 text-center">
+                    <img src="images/tarjetas.png" alt="" class="img-responsive"
+                         style="margin: auto; padding-top: 20px; padding-bottom: 20px;">
+                    <form id="cc_data">
+                        <div class="form-group">
+                            <input type="number" class="form-control" name="primaryAccountNumber" size="16"
+                                   onBlur="validCard()" placeholder="Número de la Tarjeta de Credito" br>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="cardHolderName" onBlur="validCardHolderName()"
+                                   placeholder="Nombre como aparece en la tarjeta">
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <select name="expirationYear" class="form-control">
+                                    <option value="0">Año</option>
+                                    <option value="2017">2017</option>
+                                    <option value="2018">2018</option>
+                                    <option value="2019">2019</option>
+                                    <option value="2020">2020</option>
+                                    <option value="2021">2021</option>
+                                    <option value="2022">2022</option>
+                                    <option value="2023">2023</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2025">2025</option>
+                                    <option value="2026">2026</option>
+                                    <option value="2027">2027</option>
+                                    <option value="2028">2028</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <select name="expirationMonth" class="form-control" onBlur="validateExpirationMonth()">
+                                    <option value="0">Mes</option>
+                                    <option value="01">01</option>
+                                    <option value="02">02</option>
+                                    <option value="03">03</option>
+                                    <option value="04">04</option>
+                                    <option value="05">05</option>
+                                    <option value="06">06</option>
+                                    <option value="07">07</option>
+                                    <option value="08">08</option>
+                                    <option value="09">09</option>
+                                    <option value="10">10</option>
+                                    <option value="11">11</option>
+                                    <option value="12">12</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <input type="password" class="form-control" name="cvc" size="10" placeholder="CVC"
+                                       onBlur="validCvc()">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <select name="quotes" class="form-control">
+                                    <option value="0">Cuotas</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                    <option value="7">7</option>
+                                    <option value="8">8</option>
+                                    <option value="9">9</option>
+                                    <option value="10">10</option>
+                                    <option value="11">11</option>
+                                    <option value="12">12</option>
+                                    <option value="13">13</option>
+                                    <option value="14">14</option>
+                                    <option value="15">15</option>
+                                    <option value="16">16</option>
+                                    <option value="17">17</option>
+                                    <option value="18">18</option>
+                                    <option value="19">19</option>
+                                    <option value="20">20</option>
+                                    <option value="21">21</option>
+                                    <option value="22">22</option>
+                                    <option value="23">23</option>
+                                    <option value="24">24</option>
+                                    <option value="25">25</option>
+                                    <option value="26">26</option>
+                                    <option value="27">27</option>
+                                    <option value="28">28</option>
+                                    <option value="29">29</option>
+                                    <option value="30">30</option>
+                                    <option value="31">31</option>
+                                    <option value="32">32</option>
+                                    <option value="33">33</option>
+                                    <option value="34">34</option>
+                                    <option value="35">35</option>
+                                    <option value="36">36</option>
+                                </select>
+                            </div>
+                        </div>
+                        <input type="submit" id="submit" class="btn btn-default" value="Pagar">
+                    </form>
+                    <br><br>
+                </div>
+                <div class="col-md-2 col-md-offset-4">
+                    <img class="img-responsive" style="margin: auto;" src="images/tpaga.png">
+                </div>
+                <div class="col-md-2">
+                    <img class="img-responsive" style="margin: auto;" src="images/ssl.png">
+                </div>
+        <?php
+            }
+
+            else {
+
+        ?>
+
+        <div class="col-md-6 col-md-offset-3 text-center">
+                    <h2>Valor Total: <?php echo '$' . number_format($result['cart']['order']['total']); ?></h2>
+                    <h2 style="font-size: 20px !important;">Valor
+                        IVA: <?php echo '$' . number_format($result['cart']['order']['tax']); ?></h2>
+                    <img src="images/tarjetas.png" alt="" class="img-responsive"
+                         style="margin: auto; padding-top: 20px; padding-bottom: 20px;">
+                    <form id="cc_data">
+                        <div class="form-group">
+                            <input type="number" class="form-control" name="primaryAccountNumber" size="16"
+                                   onBlur="validCard()" placeholder="Número de la Tarjeta de Credito" br>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="cardHolderName" onBlur="validCardHolderName()"
+                                   placeholder="Nombre como aparece en la tarjeta">
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <select name="expirationYear" class="form-control">
+                                    <option value="0">Año</option>
+                                    <option value="2017">2017</option>
+                                    <option value="2018">2018</option>
+                                    <option value="2019">2019</option>
+                                    <option value="2020">2020</option>
+                                    <option value="2021">2021</option>
+                                    <option value="2022">2022</option>
+                                    <option value="2023">2023</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2025">2025</option>
+                                    <option value="2026">2026</option>
+                                    <option value="2027">2027</option>
+                                    <option value="2028">2028</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <select name="expirationMonth" class="form-control" onBlur="validateExpirationMonth()">
+                                    <option value="0">Mes</option>
+                                    <option value="01">01</option>
+                                    <option value="02">02</option>
+                                    <option value="03">03</option>
+                                    <option value="04">04</option>
+                                    <option value="05">05</option>
+                                    <option value="06">06</option>
+                                    <option value="07">07</option>
+                                    <option value="08">08</option>
+                                    <option value="09">09</option>
+                                    <option value="10">10</option>
+                                    <option value="11">11</option>
+                                    <option value="12">12</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <input type="password" class="form-control" name="cvc" size="10" placeholder="CVC"
+                                       onBlur="validCvc()">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <select name="quotes" class="form-control">
+                                    <option value="0">Cuotas</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                    <option value="7">7</option>
+                                    <option value="8">8</option>
+                                    <option value="9">9</option>
+                                    <option value="10">10</option>
+                                    <option value="11">11</option>
+                                    <option value="12">12</option>
+                                    <option value="13">13</option>
+                                    <option value="14">14</option>
+                                    <option value="15">15</option>
+                                    <option value="16">16</option>
+                                    <option value="17">17</option>
+                                    <option value="18">18</option>
+                                    <option value="19">19</option>
+                                    <option value="20">20</option>
+                                    <option value="21">21</option>
+                                    <option value="22">22</option>
+                                    <option value="23">23</option>
+                                    <option value="24">24</option>
+                                    <option value="25">25</option>
+                                    <option value="26">26</option>
+                                    <option value="27">27</option>
+                                    <option value="28">28</option>
+                                    <option value="29">29</option>
+                                    <option value="30">30</option>
+                                    <option value="31">31</option>
+                                    <option value="32">32</option>
+                                    <option value="33">33</option>
+                                    <option value="34">34</option>
+                                    <option value="35">35</option>
+                                    <option value="36">36</option>
+                                </select>
+                            </div>
+                        </div>
+                        <input type="submit" id="submit" class="btn btn-default" value="Pagar">
+                    </form>
+                    <br><br>
+                    <div class="col-md-6">
+                        <img class="img-responsive" style="margin: auto;" src="images/tpaga.png">
+                    </div>
+                    <div class="col-md-6">
+                        <img class="img-responsive" style="margin: auto;" src="images/ssl.png">
+                    </div>
+                </div>
+
         <?php
             }
         ?>
-        <div class="col-md-4 col-md-offset-4 text-center">
-        	<h2>Valor Total: <?php echo '$' . number_format($result['cart']['order']['total']); ?></h2>
-        	<h2>Valor IVA: <?php echo '$' . number_format($result['cart']['order']['tax']); ?></h2>
-		    <form id="cc_data">
-		     	<div class="form-group">
-		        	<input type="number" class="form-control" name="primaryAccountNumber" size="16" onBlur="validCard()" placeholder="Número de la Tarjeta de Credito"br>
-		        </div>
-		        <div class="form-group">
-		        	<input type="text" class="form-control" name="cardHolderName" onBlur="validCardHolderName()" placeholder="Nombre">
-		        </div>
-		        <div class="form-group">
-		        	<select name="expirationYear" class="form-control">
-			        	<option value="0">Año de expiración</option>
-			        	<option value="2017">2017</option>
-			        	<option value="2018">2018</option>
-			        	<option value="2019">2019</option>
-			        	<option value="2020">2020</option>
-			        	<option value="2021">2021</option>
-			        	<option value="2022">2022</option>
-			        	<option value="2023">2023</option>
-			        	<option value="2024">2024</option>
-			        	<option value="2025">2025</option>
-			        	<option value="2026">2026</option>
-			        	<option value="2027">2027</option>
-			        	<option value="2028">2028</option>
-		        	</select>
-		        </div>
-		        <div class="form-group">
-		        	<select name="expirationMonth" class="form-control" onBlur="validateExpirationMonth()">
-		        		<option value="0">Mes de expiración</option>
-		          		<option value="01">01</option>
-			          	<option value="02">02</option>
-			          	<option value="03">03</option>
-			          	<option value="04">04</option>
-			          	<option value="05">05</option>
-			          	<option value="06">06</option>
-			          	<option value="07">07</option>
-			          	<option value="08">08</option>
-			          	<option value="09">09</option>
-			          	<option value="10">10</option>
-			          	<option value="11">11</option>
-			          	<option value="12">12</option>
-		        	</select>
-		        </div>
-		        <div class="form-group">
-		        	<input type="password" class="form-control" name="cvc" size="10" placeholder="CVC" onBlur="validCvc()">
-		        </div>
-		        <div class="form-group">
-                    <select name="quotes" class="form-control">
-                        <option value="0">Número de cuotas</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                        <option value="9">9</option>
-                        <option value="10">10</option>
-                        <option value="11">11</option>
-                        <option value="12">12</option>
-                        <option value="13">13</option>
-                        <option value="14">14</option>
-                        <option value="15">15</option>
-                        <option value="16">16</option>
-                        <option value="17">17</option>
-                        <option value="18">18</option>
-                        <option value="19">19</option>
-                        <option value="20">20</option>
-                        <option value="21">21</option>
-                        <option value="22">22</option>
-                        <option value="23">23</option>
-                        <option value="24">24</option>
-                        <option value="25">25</option>
-                        <option value="26">26</option>
-                        <option value="27">27</option>
-                        <option value="28">28</option>
-                        <option value="29">29</option>
-                        <option value="30">30</option>
-                        <option value="31">31</option>
-                        <option value="32">32</option>
-                        <option value="33">33</option>
-                        <option value="34">34</option>
-                        <option value="35">35</option>
-                        <option value="36">36</option>
-                    </select>
-                </div>
-		        <input type="submit" id="submit" class="btn btn-default" value="Pagar">
-		    </form>
-            <br><br>
-            <img class="img-responsive" src="images/tpaga.png">
-		</div>
 	</div>
 
     <form id="assoc_customer_cc" action="index.php" method="POST">
